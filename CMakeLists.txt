@@ -13,17 +13,13 @@ if(NOT DEFINED CMAKE_MACOSX_RPATH)
   set(CMAKE_MACOSX_RPATH 0)
 endif()
 
+include("cmake/HunterGate.cmake")
+HunterGate(
+    URL "https://github.com/ruslo/hunter/archive/v0.14.26.tar.gz"
+    SHA1 "45ac03944db2bc7fc55dfceca42d89ec7fa1dca2"
+)
+
 project("minizip")
-
-# set cmake debug postfix to d
-set(CMAKE_DEBUG_POSTFIX "d")
-
-# Ensure correct version of zlib is referenced
-set(ZLIB_ROOT ${DEF_ZLIB_ROOT} CACHE PATH "Parent directory of zlib installation")
-find_package(ZLIB REQUIRED)
-if(ZLIB_FOUND)
-    include_directories(${ZLIB_INCLUDE_DIRS})
-endif()
 
 set(MINIZIP_SRC "ioapi.c"
   "ioapi_buf.c"
@@ -106,13 +102,15 @@ install(FILES ${MINIZIP_PUBLIC_HEADERS}
 
 option (BUILD_TEST "enabled building of executables minizip and miniunz. Requires ZLIB!" OFF)
 if(BUILD_TEST)
+  hunter_add_package(ZLIB)
+  find_package(ZLIB CONFIG REQUIRED)
+
   add_executable(miniunz_exec miniunz.c)
-  target_link_libraries(miniunz_exec minizip ZLIB::ZLIB)
+  target_link_libraries(miniunz_exec minizip ZLIB::zlib)
 
   add_executable(minizip_exec minizip.c)
-  target_link_libraries(minizip_exec minizip ZLIB::ZLIB)
+  target_link_libraries(minizip_exec minizip ZLIB::zlib)
 
   install(TARGETS miniunz_exec minizip_exec
           RUNTIME DESTINATION "bin")
 endif()
-
