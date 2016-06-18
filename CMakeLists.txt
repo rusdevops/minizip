@@ -42,6 +42,14 @@ endif()
 # create minizip library
 add_library(minizip ${MINIZIP_SRC} ${MINIZIP_PUBLIC_HEADERS})
 
+set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
+set(config_install_dir "lib/cmake/${PROJECT_NAME}")
+
+# Configuration
+set(project_config "${generated_dir}/${PROJECT_NAME}Config.cmake")
+set(targets_export_name "${PROJECT_NAME}Targets")
+set(namespace "${PROJECT_NAME}::")
+
 option(USE_AES "enables building of aes library" ON)
 if(USE_AES)
   set(AES_SRC 
@@ -71,31 +79,45 @@ if(USE_AES)
 
   add_library(aes ${AES_SRC} ${AES_PUBLIC_HEADERS})
 
-  set_target_properties(aes minizip
-     PROPERTIES
-     COMPILE_DEFINITIONS "O -DHAVE_AES")
+  target_compile_definitions(aes PUBLIC "HAVE_AES")
 
-  target_link_libraries(minizip aes)
+  target_link_libraries(minizip PUBLIC aes)
 
-  install(TARGETS aes EXPORT zlib-exports
+  install(
+    TARGETS aes
+    EXPORT "${targets_export_name}"
     INCLUDES DESTINATION "include"
     RUNTIME DESTINATION  "bin"
     LIBRARY DESTINATION  "lib"
-    ARCHIVE DESTINATION  "lib")
+    ARCHIVE DESTINATION  "lib"
+  )
 
   install(FILES ${AES_PUBLIC_HEADERS}
     DESTINATION "include/minizip/aes")
 endif()
 
-install(TARGETS minizip EXPORT zlib-exports
+install(
+  TARGETS minizip
+  EXPORT "${targets_export_name}"
   INCLUDES DESTINATION "include"
   RUNTIME DESTINATION "bin"
   LIBRARY DESTINATION "lib"
-  ARCHIVE DESTINATION "lib")
+  ARCHIVE DESTINATION "lib"
+)
 
-install(EXPORT zlib-exports
-        DESTINATION "cmake"
-        NAMESPACE "MINIZIP::")
+install(EXPORT "${targets_export_name}"
+        DESTINATION "${config_install_dir}"
+        NAMESPACE "${namespace}")
+
+include(CMakePackageConfigHelpers)
+
+configure_package_config_file(
+    "cmake/Config.cmake.in"
+    "${project_config}"
+    INSTALL_DESTINATION "${config_install_dir}"
+)
+
+install(FILES "${project_config}" DESTINATION "${config_install_dir}")
 
 install(FILES ${MINIZIP_PUBLIC_HEADERS}
   DESTINATION "include/minizip")
