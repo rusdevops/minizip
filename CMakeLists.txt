@@ -21,6 +21,9 @@ HunterGate(
 
 project("minizip")
 
+hunter_add_package(ZLIB)
+find_package(ZLIB CONFIG REQUIRED)
+
 set(MINIZIP_SRC "ioapi.c"
   "ioapi_buf.c"
   "ioapi_mem.c"
@@ -41,6 +44,8 @@ endif()
 
 # create minizip library
 add_library(minizip ${MINIZIP_SRC} ${MINIZIP_PUBLIC_HEADERS})
+
+target_link_libraries(minizip PUBLIC ZLIB::zlib)
 
 set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
 set(config_install_dir "lib/cmake/${PROJECT_NAME}")
@@ -124,14 +129,11 @@ install(FILES ${MINIZIP_PUBLIC_HEADERS}
 
 option (BUILD_TEST "enabled building of executables minizip and miniunz. Requires ZLIB!" OFF)
 if(BUILD_TEST)
-  hunter_add_package(ZLIB)
-  find_package(ZLIB CONFIG REQUIRED)
-
   add_executable(miniunz_exec miniunz.c)
-  target_link_libraries(miniunz_exec minizip ZLIB::zlib)
+  target_link_libraries(miniunz_exec minizip)
 
   add_executable(minizip_exec minizip.c)
-  target_link_libraries(minizip_exec minizip ZLIB::zlib)
+  target_link_libraries(minizip_exec minizip)
 
   install(TARGETS miniunz_exec minizip_exec
           RUNTIME DESTINATION "bin")
