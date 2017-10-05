@@ -126,6 +126,10 @@ install(FILES "${project_config}" DESTINATION "${config_install_dir}")
 
 install(FILES ${MINIZIP_PUBLIC_HEADERS}
   DESTINATION "include/minizip")
+  
+target_include_directories(minizip PUBLIC
+    $<INSTALL_INTERFACE:include/minizip>
+)
 
 option (BUILD_TEST "enabled building of executables minizip and miniunz. Requires ZLIB!" OFF)
 if(BUILD_TEST)
